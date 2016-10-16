@@ -3,13 +3,13 @@
 include config.mk
 
 initnodedeps:
-	npm install --prefix . https fs adm-zip async aws-sdk mime follow-redirects
+	npm install --prefix . https adm-zip async aws-sdk mime follow-redirects
 
 clean :
 	rm -rf *.zip
 
 build :
-	7za a runhugo.zip * -x!Makefile -x!*.mk -x!sample.*
+	7za a runhugo.zip * -x!Makefile -x!*.mk -x!sample.* -x!runhugo.zip
 
 rmlambda:
 	aws lambda delete-function --function-name ${FUNC_NAME}
