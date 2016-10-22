@@ -74,6 +74,8 @@ const diffLocalFilesWithS3 = (dstBucket, pubDir) => {
       const keysToUpdate = [];
       const keysToRemove = [];
 
+      const promises = [];
+
       data.Contents.forEach(s3Obj => {
         if(keys.filter(key => key === s3Obj.Key).length === 0) {
           keysToRemove.push(s3Obj.Key);
@@ -82,22 +84,29 @@ const diffLocalFilesWithS3 = (dstBucket, pubDir) => {
           const fileStream = fs.createReadStream(filePath);
           const hash = crypto.createHash('md5').setEncoding('hex');
 
-          fileStream.on('error', reject);
-          fileStream.on('open', () => {
-            fileStream.pipe(hash).on('finish', () => {
-              if(hash.read() !== JSON.parse(s3Obj.ETag)) {
-                keysToUpdate.push(s3Obj.Key);
-              }
+          promises.push(new Promise((resolve, reject) => {
+            fileStream.on('error', reject);
+            fileStream.on('open', () => {
+              fileStream.pipe(hash).on('finish', () => {
+                if(hash.read() !== JSON.parse(s3Obj.ETag)) {
+                  keysToUpdate.push(s3Obj.Key);
+                }
+                resolve();
+              });
             });
-          });
+          }));
         }
       });
 
-      console.log(util.format('%d files to add', keysToAdd.length));
-      console.log(util.format('%d files to update', keysToUpdate.length));
-      console.log(util.format('%d files to remove', keysToRemove.length));
+      Promise.all(promises)
+        .then(() => {
+          console.log(util.format('%d files to add', keysToAdd.length));
+          console.log(util.format('%d files to update', keysToUpdate.length));
+          console.log(util.format('%d files to remove', keysToRemove.length));
 
-      resolve({ keysToAdd, keysToUpdate, keysToRemove });
+          resolve({ keysToAdd, keysToUpdate, keysToRemove });
+        })
+        .catch(reject);
     });
   })
 }
