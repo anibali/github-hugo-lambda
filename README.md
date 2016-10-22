@@ -1,28 +1,41 @@
-# Github Hugo Lambda deployment
-Lambda AWS &lt;> Hugo Project
+# Github Hugo function for AWS Lambda
 
-This project is created to streamline and automate pushing Hugo websites to AWS s3
+This is an AWS Lambda function for automatically building and deploying a static
+Hugo website.
 
-# Rationale
+You must set up SNS, S3, and Lambda appropriately for this to be useful. See
+the "Inspired by" section for help.
 
-Assuming, you setup the workflow as described here: http://bezdelev.com/post/hugo-aws-lambda-static-website/
-To update your project, you have to update input.<project> bucket.
+When GitHub triggers the function via SNS, this function:
 
-The approach is great, but I found that pulling the project off github and running Hugo on Lambda would be more efficient.
+1. Downloads the latest source code from GitHub
+2. Generates the website from the source code with Hugo
+3. Updates the S3 bucket with the new website
 
-# Prerequisites
- - p7zip
- - npm
- - gnu make
 
-This project includes:
- - RunHugo.js - modified version of the RunHugo.js included in the post.
- - Makefile - make commands for initializing nodejs dependencies, updating lambda code, building the project
- - sample.config.{mk,json} - sample config files
- - hugo - hugo binary (FIXME: pull the latest version off Hugo project)
- 
- # Install
- 
- 1. ```git clone https://github.com/alex-glv/lahg```
- 2. Edit sample config files and rename to config.{json,mk}
- 3. ```make initnodedeps && make build && make deploy``` This will update provision nodejs dependencies, build the zip file and deploy to AWS Lambda
+## Inspired by
+
+* [How to host Hugo static website generator on AWS Lambda](http://bezdelev.com/post/hugo-aws-lambda-static-website/)
+* [Dynamic GitHub Actions with AWS Lambda](https://aws.amazon.com/blogs/compute/dynamic-github-actions-with-aws-lambda/)
+* [github-hugo-lambda](https://github.com/alex-glv/github-hugo-lambda)
+
+## Prerequisites
+
+* p7zip
+* npm
+
+## Install
+
+1. Clone the repo
+2. Edit sample config file and rename to config.json
+3. `npm install`
+4. `npm run package`
+5. Upload `runhugo.zip` to AWS Lambda, using the Node 4.3.2 runtime
+
+## Trying it locally
+
+Requires [lambda-local](https://www.npmjs.com/package/lambda-local).
+
+```sh
+lambda-local -t 30 -l RunHugo.js -e /dev/null
+```

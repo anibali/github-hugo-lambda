@@ -1,6 +1,5 @@
 {
-    "owner": "",
-    "repo" : "",
-    "dstBucket": "<S3 bucket name>", 
-    "tmpDir": "/tmp/sources"
+  "owner": "<GitHub username>",
+  "repo" : "<GitHub repo>",
+  "dstBucket": "<S3 bucket name>"
 }
